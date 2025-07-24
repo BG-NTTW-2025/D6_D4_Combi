@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D6 + D4 Dobbelstenen</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 1vw;
+      margin: 0;
+      background-color: #AAAAf7;
+    }
+
+    #last-updated {
+      text-align: center;
+      font-size: 0.9em;
+      color: gray;
+      margin-bottom: 1em;
+    }
+
+    /* ----- Algemene knopstijl ----- */
+    button {
+      font-size: 1.2em;
+      padding: 0.5em 1.5em;
+      margin-bottom: 1em;
+      cursor: pointer;
+      border: 3px solid black;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    .knop-groen {
+      background-color: green;
+      color: white;
+    }
+
+    .knop-oranje {
+      background-color: orange;
+      color: black;
+    }
+
+    button:disabled {
+      background-color: grey;
+      color: white;
+      cursor: not-allowed;
+    }
+
+    /* ----- D6 Dobbelsteen ----- */
+    #dobbelsteen {
+      width: 80%;
+      max-width: 200px;
+      height: auto;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-bottom: 1vw;
+    }
+
+    #resultaat {
+      margin-top: 1vw;
+      font-size: 3vw;
+      font-weight: bold;
+    }
+
+    /* ----- Afscheiding ----- */
+    hr {
+      margin: 1em auto;
+      width: 60%;
+      border: 0;
+      height: 3px;
+      background-color: #555;
+      border-radius: 3px;
+    }
+
+    /* ----- D4 Dobbelstenen ----- */
+    .dice-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin-top: 1em;
+    }
+
+    .die {
+      width: 150px;
+      height: 125px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .die img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .results {
+      font-size: 2.1em;
+      /*white-space: pre-wrap;*/
+    }
+  </style>
+</head>
+<body>
+
+  <p id="last-updated"></p>
+
+  <!-- === D6 DOBBELSTEEN === -->
+  <h2>D6 Dobbelsteen</h2>
+  <img id="dobbelsteen" src="fig1.jpg" alt="Dobbelsteen">
+  <div>
+    <button id="gooiKnopD6" class="knop-groen" onclick="startStop()">Gooi dobbelsteen</button>
+  </div>
+  <div id="resultaat">Gemaal</div>
+
+  <hr>
+
+  <!-- === D4 DOBBELSTENEN === -->
+  <h2>D4 Dobbelstenen</h2>
+  <button id="gooiKnop" class="knop-groen" onclick="startDobbel()">Gooi de dobbelsteen</button>
+  <div class="dice-container">
+    <div id="die1" class="die"><img src="geel0.jpg" alt="Geel"></div>
+    <div id="die2" class="die"><img src="blauw10.jpg" alt="Blauw1"></div>
+    <div id="die3" class="die"><img src="blauw22.jpg" alt="Blauw2"></div>
+    <div id="die4" class="die"><img src="groen10.jpg" alt="Groen1"></div>
+    <div id="die5" class="die"><img src="groen22.jpg" alt="Groen2"></div>
+  </div>
+
+  <div class="results">
+    <p><strong>Mogelijke uitkomsten:</strong></p>
+    <p id="output"></p>
+  </div>
+
+  <script>
+    // Laatste update
+    const updated = new Date(document.lastModified);
+    const datum = updated.toLocaleDateString("nl-NL");
+    const tijd = updated.toLocaleTimeString("nl-NL", { hour: '2-digit', minute: '2-digit' });
+    document.getElementById("last-updated").innerText = "Laatste update: " + datum + " om " + tijd;
+
+    // D6 logica
+    const afbeeldingen = [
+      { src: "fig1.jpg", label: "Gemaal" },
+      { src: "fig2.jpg", label: "Terp" },
+      { src: "fig3.jpg", label: "Polder" },
+      { src: "fig4.jpg", label: "Brug" },
+      { src: "fig5.jpg", label: "Bijl" },
+      { src: "fig6.jpg", label: "Zwemvest" }
+    ];
+    let interval = null;
+    let draaiend = false;
+
+    function startStop() {
+      const knop = document.getElementById("gooiKnopD6");
+
+      if (!draaiend) {
+        draaiend = true;
+        knop.textContent = "STOP";
+        knop.classList.remove("knop-groen");
+        knop.classList.add("knop-oranje");
+
+        interval = setInterval(() => {
+          const index = Math.floor(Math.random() * 6);
+          document.getElementById("dobbelsteen").src = afbeeldingen[index].src;
+          document.getElementById("resultaat").textContent = afbeeldingen[index].label;
+        }, 100);
+      } else {
+        knop.disabled = true;
+        knop.textContent = "Wacht";
+        setTimeout(() => {
+          clearInterval(interval);
+          draaiend = false;
+          setTimeout(() => {
+            knop.disabled = false;
+            knop.textContent = "Gooi dobbelsteen";
+            knop.classList.remove("knop-oranje");
+            knop.classList.add("knop-groen");
+          }, 5000);
+        }, 1000);
+      }
+    }
+
+    // D4 logica
+    const intervalIds = [];
+    const stopDelays = [500, 1000, 1500, 2000, 2500];
+    const options = {
+      geel: [0, 1, 2, 3],
+      blauw1: [0, 1, 3, 5],
+      blauw2: [2, 4, 6, 8],
+      groen1: [0, 1, 3, 5],
+      groen2: [2, 4, 6, 8]
+    };
+
+    const dobbelstenen = [
+      { id: 'die1', naam: 'geel', opties: options.geel },
+      { id: 'die2', naam: 'blauw1', opties: options.blauw1 },
+      { id: 'die3', naam: 'blauw2', opties: options.blauw2 },
+      { id: 'die4', naam: 'groen1', opties: options.groen1 },
+      { id: 'die5', naam: 'groen2', opties: options.groen2 }
+    ];
+
+    let rolling = false;
+
+    function startDobbel() {
+      if (rolling) {
+        stopDobbel();
+        return;
+      }
+
+      rolling = true;
+      const knop = document.getElementById("gooiKnop");
+      knop.innerText = "STOP";
+      knop.classList.remove("knop-groen");
+      knop.classList.add("knop-oranje");
+
+      dobbelstenen.forEach((dobbel, index) => {
+        const img = document.getElementById(dobbel.id).firstElementChild;
+        intervalIds[index] = setInterval(() => {
+          const waarde = dobbel.opties[Math.floor(Math.random() * dobbel.opties.length)];
+          img.src = `${dobbel.naam}${waarde}.jpg`;
+          img.setAttribute("data-value", waarde);
+        }, 100);
+      });
+    }
+
+    function stopDobbel() {
+      const knop = document.getElementById("gooiKnop");
+      knop.innerText = "Wacht";
+      knop.disabled = true;
+
+      dobbelstenen.forEach((dobbel, index) => {
+        setTimeout(() => {
+          clearInterval(intervalIds[index]);
+        }, stopDelays[index]);
+      });
+
+      setTimeout(() => {
+        toonResultaat();
+      }, 2500);
+
+      setTimeout(() => {
+        rolling = false;
+        knop.innerText = "Gooi de dobbelsteen";
+        knop.classList.remove("knop-oranje");
+        knop.classList.add("knop-groen");
+        knop.disabled = false;
+      }, 8000);
+    }
+
+    function toonResultaat() {
+      const waarden = dobbelstenen.map(d => {
+        const img = document.getElementById(d.id).firstElementChild;
+        return parseInt(img.getAttribute("data-value") || "0");
+      });
+
+      const geel = waarden[0];
+      const t1 = waarden[1], t2 = waarden[2];
+      const e1 = waarden[3], e2 = waarden[4];
+
+      const tientallen = getTientallenOptions(t1, t2);
+      const eenheden = getTientallenOptions(e1, e2);
+
+      let mogelijkheden = [];
+      tientallen.forEach(t => {
+        eenheden.forEach(e => {
+          mogelijkheden.push(100 * geel + 10 * t + e);
+        });
+      });
+
+      if (mogelijkheden.length === 0) {
+        document.getElementById("output").innerText = "Geen geldige combinaties";
+        return;
+      }
+
+      let tekst = mogelijkheden.join(', ');
+      let regels = [];
+      let regel = '';
+
+      tekst.split(', ').forEach((getal) => {
+        if ((regel + getal).length > 30) {
+          regels.push(regel.trim());
+          regel = '';
+        }
+        regel += getal + ', ';
+      });
+      if (regel.trim() !== '') {
+        regels.push(regel.trim());
+      }
+
+      document.getElementById("output").innerText = regels.join('\n');
+    }
+
+    function getTientallenOptions(a, b) {
+      let results = [];
+      if (a + b <= 10) results.push(a + b);
+      if (a - b >= 0) results.push(a - b);
+      if (b - a >= 0) results.push(b - a);
+      if (a <= 10) results.push(a);
+      if (b <= 10) results.push(b);
+      return [...new Set(results)].sort((x, y) => x - y);
+    }
+  </script>
+</body>
+</html>
